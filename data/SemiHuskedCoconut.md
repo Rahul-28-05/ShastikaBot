@@ -1,0 +1,30 @@
+# Semi-Husked Coconut - Export Specifications
+
+## 🥥 Product Overview
+
+Shastika Global Impex offers a wide range of **Semi-Husked Coconuts** known for their **freshness and rich taste**.
+
+* **Application Areas:** Widely used in homes, restaurants, Oil Factories, Hotels, and Departmental Stores for preparing various edible products and for religious purposes (Pooja/Temples).
+
+## 📏 Technical Specifications
+
+| Specification Field | Detail |
+| :--- | :--- |
+| **Colour** | **Brown** |
+| **Maturity** | Well Matured |
+| **Weight Range** | **500 gms to 600 gms** |
+| **Oil Content** | **60% to 63% min** |
+| **Size (Circumference)** | **14–15 inches** |
+| **Packing** | **25 pieces per bag** |
+| **Shelf Life** | **6 Months** |
+
+## ✨ Key Product Features
+
+We guarantee a premium quality product with the following features:
+
+* High nutritional value
+* Tamper-proof packaging
+* Used in various edible products
+* Free from defoliation and rottenness
+* Rich in taste & **100% fresh**
+* Pure & fine texture
