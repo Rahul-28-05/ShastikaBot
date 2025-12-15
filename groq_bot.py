@@ -1,3 +1,7 @@
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 import streamlit as st
 import os
 import shutil
@@ -15,7 +19,6 @@ DATA_PATH = "./data"
 CHROMA_PATH = "./chroma_db"
 LLM_MODEL = "llama-3.1-8b-instant" 
 
-# --- 1. SETUP PAGE ---
 st.set_page_config(
     page_title="Shastika Global | AI Export Desk", 
     page_icon="🥥",
@@ -23,116 +26,143 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. ORGANIC GREEN THEME (CSS) ---
+# --- DARK MODE CSS ---
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap');
 
-/* --- MAIN BACKGROUND (Soft Green Gradient) --- */
+/* --- GLOBAL TEXT COLORS (High Contrast White) --- */
+.stApp, .stMarkdown, p, h1, h2, h3, h4, h5, h6, span, div {
+    color: #E0E0E0 !important;
+}
+
+/* --- MAIN BACKGROUND (Dark Gradient) --- */
 .stApp {
-    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); /* Mint to Sage Green */
-    color: #1a1a1a;
+    background: linear-gradient(180deg, #0E1117 0%, #051a05 100%);
 }
 
 /* --- TYPOGRAPHY --- */
 html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Open Sans', sans-serif;
 }
 
 h1, h2, h3 {
-    color: #1B5E20; /* Dark Forest Green */
-    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    color: #4CAF50 !important; /* Bright Green for Headings */
+    font-weight: 700;
 }
 
-/* --- IFRAME / SIDEBAR OPTIMIZATION (THE TWEAK) --- */
-/* This reduces padding so it fits in the website popup */
+/* --- EMBED OPTIMIZATION --- */
 .block-container {
-    padding-top: 1rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    padding-bottom: 1rem !important;
+    padding: 1rem 1rem 2rem 1rem !important;
 }
 
-/* --- CHAT HEADER --- */
-.glass-header {
-    background: rgba(255, 255, 255, 0.6); /* Semi-transparent White */
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #a5d6a7;
-    padding: 15px; /* Reduced padding for sidebar */
-    margin-bottom: 15px;
-    border-radius: 0 0 20px 20px;
+/* --- HEADER STYLING (Dark Card) --- */
+.brand-header {
+    background: #1E1E1E;
+    border-bottom: 3px solid #4CAF50;
+    padding: 15px;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
 }
 
-.header-title {
-    font-size: 1.8rem; /* Slightly smaller for sidebar */
+.brand-title {
+    font-size: 1rem;
     font-weight: 800;
-    color: #1B5E20; 
+    color: #B39DDB !important; /* Light Purple for contrast */
+    text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-.header-subtitle {
-    font-size: 0.8rem;
-    color: #2E7D32; 
-    text-transform: uppercase;
-    letter-spacing: 2px;
+.brand-subtitle {
+    font-size: 3rem;
+    color: #4CAF50 !important; /* Bright Green */
     font-weight: 600;
+    letter-spacing: 2px;
+    text-shadow: 0px 0px 10px rgba(76, 175, 80, 0.3);
 }
 
 /* --- CHAT BUBBLES --- */
-
-/* User Bubble (Deep Green) */
-.st-emotion-cache-1c7v0n0 { 
-    background-color: #2E7D32; /* Forest Green */
-    border: none;
+/* User Bubble (Green) */
+.st-emotion-cache-1c7v0n0 {
+    background-color: #1B5E20 !important; /* Darker Green */
+    border: 1px solid #2E7D32;
     border-radius: 15px 15px 0 15px;
-    color: #FFFFFF;
-    box-shadow: 0 3px 6px rgba(46, 125, 50, 0.3);
+}
+.st-emotion-cache-1c7v0n0 * {
+    color: #E0E0E0 !important;
 }
 
-/* AI Bubble (Crisp White) */
-.st-emotion-cache-4oy32j { 
-    background-color: #FFFFFF; /* Pure White */
-    border: 1px solid #A5D6A7; /* Green Border */
-    border-radius: 15px 15px 15px 0;
-    color: #1B5E20; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+/* Assistant Bubble (Dark Grey) */
+.st-emotion-cache-4oy32j {
+    background-color: #262730 !important;
+    border: 1px solid #444;
+    border-left: 4px solid #F9A825; /* Amber accent */
+}
+.st-emotion-cache-4oy32j * {
+    color: #E0E0E0 !important;
 }
 
 /* --- INPUT FIELD --- */
 .stTextInput > div > div > input {
-    color: #1B5E20; 
-    background-color: #FFFFFF; 
-    border: 2px solid #A5D6A7 !important; 
-    border-radius: 12px; 
-    padding: 12px; /* Smaller padding */
-    font-size: 14px;
+    background-color: #262730 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #4CAF50 !important;
+    border-radius: 30px;
 }
-.stTextInput > div > div > input:focus {
-    border: 2px solid #2E7D32 !important;
-    box-shadow: 0 0 15px rgba(46, 125, 50, 0.2);
+.stTextInput > div > div > input::placeholder {
+    color: #AAAAAA !important;
 }
 
-/* Select Box Styling */
+/* ================= SELECTBOX DARK FIX ================= */
 div[data-baseweb="select"] > div {
-    background-color: #FFFFFF;
-    border-color: #A5D6A7;
-    color: #1B5E20;
+    background-color: #262730 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #4CAF50 !important;
+    border-radius: 12px !important;
 }
 
-/* Hide Streamlit Elements */
-header {visibility: hidden !important;}
-footer {visibility: hidden !important;}
-.stSpinner {color: #2E7D32;}
+div[data-baseweb="select"] span {
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
+div[data-baseweb="select"] svg {
+    fill: #FFFFFF !important;
+}
+
+/* Dropdown Menu Items */
+ul[data-baseweb="menu"] {
+    background-color: #262730 !important;
+    border: 1px solid #444 !important;
+    border-radius: 12px !important;
+}
+
+ul[data-baseweb="menu"] li {
+    background-color: #262730 !important;
+    color: #E0E0E0 !important;
+}
+
+ul[data-baseweb="menu"] li:hover {
+    background-color: #1B5E20 !important; /* Green hover */
+}
+
+ul[data-baseweb="menu"] li[aria-selected="true"] {
+    background-color: #2E7D32 !important;
+    color: #FFFFFF !important;
+}
+
+header, footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER RENDER ---
+# --- HEADER ---
 st.markdown("""
-<div class="glass-header">
-    <div class="header-subtitle">Shastika Global Impex</div>
-    <div class="header-title">AI EXPORT DESK</div>
+<div class="brand-header">
+    <div class="brand-subtitle">Shastika Global Impex</div>
+    <div class="brand-title">Export Assistant</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -160,41 +190,41 @@ def load_and_process_data():
     except Exception: return None
 
 def get_rag_chain(vectorstore, selected_language):
-    """Defines the Groq LLM with ADVANCED TYPO CORRECTION Logic."""
+    """Defines the Groq LLM with SECURE API HANDLING."""
     
-    try: groq_api_key = st.secrets.get("GROQ_API_KEY")
-    except: groq_api_key = os.environ.get("GROQ_API_KEY")
-    
-    if not groq_api_key: 
-        groq_api_key = "YOUR_FALLBACK_KEY_HERE" 
+    try:
+        groq_api_key = st.secrets["GROQ_API_KEY"]
+    except (KeyError, FileNotFoundError):
+        groq_api_key = os.environ.get("GROQ_API_KEY")
+
+    if not groq_api_key:
+        st.error("🚨 System Error: API Key missing. Please configure 'GROQ_API_KEY' in Streamlit Secrets.")
+        st.stop()
 
     llm = ChatGroq(model=LLM_MODEL, temperature=0, api_key=groq_api_key)
 
-    # --- PROMPT: INTELLIGENT TYPO CORRECTION ---
+    # --- PROMPT ---
     template = f"""
-    You are the **AI Export Desk** for Shastika Global Impex.
+    You are the **AI Export Assistant** for **Shastika Global Impex**.
     
     **LANGUAGE SETTINGS:**
     - User Language: **{selected_language}**
     - **PROCESS:** Translate Input to English -> **AUTO-CORRECT TYPOS** -> Match with Context -> Translate Answer to **{selected_language}**.
     
-    **INTELLIGENT TYPO & INTENT HANDLING:**
-    1. **Detect & Correct:** Users may type "docnut" (Coconut), "bannana" (Banana), "huskd" (Husked), "ceor" (Coir).
-       - You MUST silently interpret "docnut" as "Coconut".
-       - You MUST silently interpret "banna" as "Banana".
-    2. **Context Matching:** If the user asks for "the brown fruit we drink", infer **Semi-Husked Coconut**.
+    **INTELLIGENT LOGIC:**
+    1. **Typos:** Interpret "docnut" -> Coconut, "coirpeet" -> Coir Pith.
+    2. **Tone:** Professional, Warm, Helpful.
     
     **STRICT DATABASE RULES:**
     1. **SOURCE OF TRUTH:** Answer **ONLY** using the "CONTEXT" below.
-    2. **ZERO HALLUCINATION:** If the *corrected* product (e.g., Apple, Rice) is NOT in the Context, strictly reply: 
-       *"I apologize, but we strictly deal in Coconuts, Coir, and Bananas. I do not have information on that product."*
+    2. **ZERO HALLUCINATION:** If asked about products NOT in the context, politely reply:
+        *"I specialize in Shastika's core exports: Coconuts, Coir, and Bananas. I don't have information on that specific item."*
 
-    **INTERACTION STYLE:**
-    - **Greeting:** Only greet if the user says "Hi/Hello". Otherwise, answer immediately.
-    - **Formatting:** Use **Bold** for headers and *Bullet Points* for specs.
-    - **No Fluff:** Do not explain that you corrected the typo. Just answer the question.
+    **FORMATTING:**
+    - Use **Bold** for Product Names.
+    - Use *Bullet Points* for specifications.
 
-    **CONTEXT (YOUR ONLY KNOWLEDGE):**
+    **CONTEXT:**
     {{context}}
 
     **USER INPUT:**
@@ -216,7 +246,6 @@ def get_rag_chain(vectorstore, selected_language):
 # --- MAIN APP LOGIC ---
 def main():
     
-    # --- LANGUAGE SELECTION ---
     LANGUAGE_OPTIONS = ["English", "Spanish", "French", "Hindi", "Tamil"]
     
     if "selected_language" not in st.session_state:
@@ -225,7 +254,7 @@ def main():
     col1, col2, col3 = st.columns([1, 4, 1])
     with col2:
         selected_language = st.selectbox(
-            "Select Communication Language:", 
+            "Select Language:", 
             options=LANGUAGE_OPTIONS,
             index=LANGUAGE_OPTIONS.index(st.session_state.selected_language),
             key="lang_select",
@@ -237,8 +266,8 @@ def main():
         st.session_state.messages = [] 
 
     with st.sidebar:
-        st.header("Database Control")
-        if st.button("Refresh Knowledge Base"):
+        st.header("Admin")
+        if st.button("Refresh Data"):
              if os.path.exists(CHROMA_PATH):
                 shutil.rmtree(CHROMA_PATH)
                 st.cache_resource.clear()
@@ -256,12 +285,12 @@ def main():
 
     # --- CHAT LOOP ---
     for message in st.session_state.messages:
-        # Green Avatars for Organic Theme
+        # Icons: '🧑‍💼' for User, '🌿' for Bot
         avatar_icon = "🧑‍💼" if message["role"] == "user" else "🌿"
         with st.chat_message(message["role"], avatar=avatar_icon):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Type your inquiry here..."):
+    if prompt := st.chat_input("Ask about Coconuts, Bananas, or Coir..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         with st.chat_message("user", avatar="🧑‍💼"):
