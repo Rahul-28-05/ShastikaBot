@@ -26,7 +26,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- DARK MODE CSS ---
+# --- DARK MODE & CLEAN UI CSS ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap');
@@ -52,6 +52,12 @@ h1, h2, h3 {
     font-weight: 700;
 }
 
+/* --- CRITICAL: HIDE STREAMLIT BRANDING & MENU --- */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+.stDeployButton {display:none;}
+header {visibility: hidden;} /* Hides the top toolbar */
+
 /* --- EMBED OPTIMIZATION --- */
 .block-container {
     padding: 1rem 1rem 2rem 1rem !important;
@@ -61,7 +67,7 @@ h1, h2, h3 {
 .brand-header {
     background: #1E1E1E;
     border-bottom: 3px solid #4CAF50;
-    padding: 15px;
+    padding: 20px;
     text-align: center;
     border-radius: 0 0 15px 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -74,14 +80,23 @@ h1, h2, h3 {
     color: #B39DDB !important; /* Light Purple for contrast */
     text-transform: uppercase;
     letter-spacing: 1px;
+    margin-bottom: 5px;
 }
 
 .brand-subtitle {
-    font-size: 3rem;
+    font-size: 2.5rem;
     color: #4CAF50 !important; /* Bright Green */
     font-weight: 600;
     letter-spacing: 2px;
     text-shadow: 0px 0px 10px rgba(76, 175, 80, 0.3);
+    margin: 0;
+}
+
+.brand-address {
+    font-size: 0.85rem;
+    color: #AAAAAA !important;
+    margin-top: 10px;
+    font-style: italic;
 }
 
 /* --- CHAT BUBBLES --- */
@@ -153,16 +168,17 @@ ul[data-baseweb="menu"] li[aria-selected="true"] {
     background-color: #2E7D32 !important;
     color: #FFFFFF !important;
 }
-
-header, footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER ---
+# --- HEADER WITH ADDRESS ---
 st.markdown("""
 <div class="brand-header">
     <div class="brand-subtitle">Shastika Global Impex</div>
     <div class="brand-title">Export Assistant</div>
+    <div class="brand-address">
+        📍 123, Export Avenue, Chennai, Tamil Nadu, India - 600001
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -265,14 +281,7 @@ def main():
         st.session_state.selected_language = selected_language
         st.session_state.messages = [] 
 
-    with st.sidebar:
-        st.header("Admin")
-        if st.button("Refresh Data"):
-             if os.path.exists(CHROMA_PATH):
-                shutil.rmtree(CHROMA_PATH)
-                st.cache_resource.clear()
-                st.rerun()
-
+    # --- REMOVED SIDEBAR, DATA LOADS AUTOMATICALLY ---
     vectorstore = load_and_process_data()
     if vectorstore is None:
         st.error("⚠ System Offline: Database not found in './data'.")
@@ -285,12 +294,21 @@ def main():
 
     # --- CHAT LOOP ---
     for message in st.session_state.messages:
-        # Icons: '🧑‍💼' for User, '🌿' for Bot
         avatar_icon = "🧑‍💼" if message["role"] == "user" else "🌿"
         with st.chat_message(message["role"], avatar=avatar_icon):
             st.markdown(message["content"])
 
     if prompt := st.chat_input("Ask about Coconuts, Bananas, or Coir..."):
+        
+        # --- SECRET COMMAND: /refresh ---
+        if prompt.lower().strip() == "/refresh":
+            with st.spinner("♻️ Refreshing Knowledge Base..."):
+                if os.path.exists(CHROMA_PATH):
+                    shutil.rmtree(CHROMA_PATH)
+                st.cache_resource.clear()
+            st.success("✅ Database Updated! Please reload the page.")
+            st.stop()
+
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         with st.chat_message("user", avatar="🧑‍💼"):
