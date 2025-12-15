@@ -26,7 +26,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- MAX STEALTH CSS (Hides "Built with Streamlit") ---
+# --- NUCLEAR CSS TO REMOVE "BUILT WITH STREAMLIT" ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap');
@@ -41,21 +41,35 @@ st.markdown("""
     background: linear-gradient(180deg, #0E1117 0%, #051a05 100%);
 }
 
-/* --- CRITICAL: FORCE HIDE FOOTER & BRANDING --- */
-/* 1. Hides the standard footer */
-footer { visibility: hidden !important; height: 0px !important; }
+/* --- CRITICAL: NUCLEAR OPTION TO HIDE BRANDING --- */
+/* 1. Hides the top hamburger menu */
+#MainMenu {visibility: hidden;}
 
-/* 2. Hides the 'Viewer' badge on public apps */
-div[class^='viewerBadge'] { display: none !important; }
+/* 2. Hides the footer text */
+footer {visibility: hidden;}
 
-/* 3. Hides the 'Manage App' button */
-.stDeployButton { display: none !important; }
+/* 3. Hides the "Deploy" button */
+.stDeployButton {display:none;}
 
-/* 4. Hides the specific element Streamlit uses for the footer container */
-[data-testid="stFooter"] { display: none !important; }
+/* 4. Hides the top header bar */
+header {visibility: hidden;}
 
-/* 5. Hides the top right menu hamburger */
-[data-testid="stHeader"] { visibility: hidden !important; }
+/* 5. AGGRESSIVE: Hides the specific Streamlit footer container */
+[data-testid="stFooter"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0px !important;
+}
+
+/* 6. Hides the "Viewer" badge (the little icon at bottom right) */
+.viewerBadge_container__1QSob {
+    display: none !important;
+}
+
+/* 7. Generic catch-all for viewer badges */
+div[class*="viewerBadge"] {
+    display: none !important;
+}
 
 /* --- HEADER & TYPOGRAPHY --- */
 h1, h2, h3 {
