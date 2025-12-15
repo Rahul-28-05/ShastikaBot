@@ -6,3 +6,4 @@ langchain-groq
 langchain-huggingface
 chromadb
 pysqlite3-binary
+sentence-transformers
