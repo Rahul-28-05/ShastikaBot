@@ -1,6 +1,10 @@
-__import__('pysqlite3')
+# --- SAFE IMPORT FOR SQLITE (Cloud vs Local) ---
 import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+try:
+    __import__('pysqlite3')
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass  # If pysqlite3 is missing (local PC), use standard sqlite3
 
 import streamlit as st
 import os
@@ -52,11 +56,13 @@ h1, h2, h3 {
     font-weight: 700;
 }
 
-/* --- CRITICAL: HIDE STREAMLIT BRANDING & MENU --- */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-.stDeployButton {display:none;}
-header {visibility: hidden;} /* Hides the top toolbar */
+/* --- NUCLEAR FOOTER REMOVAL (Force Hide) --- */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header { visibility: hidden; }
+[data-testid="stFooter"] { display: none !important; }
+.stDeployButton { display: none !important; }
+div[class^='viewerBadge'] { display: none !important; }
 
 /* --- EMBED OPTIMIZATION --- */
 .block-container {
@@ -90,13 +96,6 @@ header {visibility: hidden;} /* Hides the top toolbar */
     letter-spacing: 2px;
     text-shadow: 0px 0px 10px rgba(76, 175, 80, 0.3);
     margin: 0;
-}
-
-.brand-address {
-    font-size: 0.85rem;
-    color: #AAAAAA !important;
-    margin-top: 10px;
-    font-style: italic;
 }
 
 /* --- CHAT BUBBLES --- */
@@ -171,14 +170,11 @@ ul[data-baseweb="menu"] li[aria-selected="true"] {
 </style>
 """, unsafe_allow_html=True)
 
-# --- HEADER WITH ADDRESS ---
+# --- CLEAN HEADER (No Address) ---
 st.markdown("""
 <div class="brand-header">
     <div class="brand-subtitle">Shastika Global Impex</div>
     <div class="brand-title">Export Assistant</div>
-    <div class="brand-address">
-        📍 123, Export Avenue, Chennai, Tamil Nadu, India - 600001
-    </div>
 </div>
 """, unsafe_allow_html=True)
 
